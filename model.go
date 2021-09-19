@@ -6,9 +6,9 @@ import (
 )
 
 type product struct {
-	ID    int     `json:"id`
-	Name  string  `json:"name`
-	Price float64 `json:"price`
+	ID    int     `json:"id"`
+	Name  string  `json:"name"`
+	Price float64 `json:"price"`
 }
 
 func (p *product) getProduct(db *sql.DB) error {
@@ -21,8 +21,16 @@ func (p *product) updateProduct(db *sql.DB) error {
 func (p *product) deleteProduct(db *sql.DB) error {
 	return errors.New("not implemented")
 }
+
 func (p *product) createProduct(db *sql.DB) error {
-	return errors.New("not implemented")
+	err := db.QueryRow(
+		"INSERT INTO products(name, price) VALUES($1, $2) RETURNING id",
+		p.Name, p.Price).Scan(&p.ID)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func getProducts(db *sql.DB, start, count int) ([]product, error) {

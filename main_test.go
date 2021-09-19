@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -48,6 +50,27 @@ func TestGetNonExistentProduct(t *testing.T) {
 	json.Unmarshal(response.Body.Bytes(), &m)
 	if m["error"] != "Product not found" {
 		t.Errorf("Expected the 'error' key of the response to be set to 'Product not found'. Got '%s'", m["error"])
+	}
+}
+
+func TestCreateProduct(t *testing.T) {
+	clearTable()
+	var jsonStr = []byte(`{"name":"test product", "price": 99.99}`)
+	req, _ := http.NewRequest("POST", "/product", bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application.json")
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusCreated, response.Code)
+	var m map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &m)
+	fmt.Println(m)
+	if m["name"] != "test product" {
+		t.Errorf("expected product name to be 'test product', got %v", m["name"])
+	}
+	if m["price"] != 99.99 {
+		t.Errorf("expected product price to be 99.99, got %v", m["price"])
+	}
+	if m["id"] != 1.0 {
+		t.Errorf("expected ID to be 1, got %v", m["id"])
 	}
 }
 
